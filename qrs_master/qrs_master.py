@@ -4,6 +4,7 @@ import numpy as np
 import math
 import itertools
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 from torchvision.utils import save_image
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -12,6 +13,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import matplotlib
 import torch
+import data_loader
 
 num_epochs = 100
 num_classes = 1
@@ -23,27 +25,32 @@ trans = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
 
-class qrs_master(nn.Module):
+class QrsMaster(nn.Module):
     def __init__(self):
-        super(ConvNet, self).__init__()
-        self.layer1 = nn.Sequential(nn.Conv2d(1, 32, kernel_size=5, stride=1, padding=2),
-                                    nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2))
-        self.layer2 = nn.Sequential(nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
-                                    nn.ReLU(), nn.MaxPool2d(kernel_size=2, stride=2))
-        self.drop_out = nn.Dropout()
-        self.fc1 = nn.Linear(7 * 7 * 64, 1000)
-        self.fc2 = nn.Linear(1000, 10)
+        self.fc1 = nn.Linear(61, 10)
+        self.fc2 = nn.Linear(10, 1)
 
     def forward(self, x):
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = out.reshape(out.size(0), -1)
-        out = self.drop_out(out)
-        out = self.fc1(out)
-        out = self.fc2(out)
-        return out
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
 
-    def train_net(self):
+def tryToTrain():
+    epochs = 10
+    data = data_loader.QrsDataset()
+    dataLoader = DataLoader(data, batch_size=15, shuffle=True)
+    qrs_master = QrsMaster()
+    optimizer = torch.optim.SGD(qrs_master.parameters(), lr=learning_rate, momentum=0.9)
+    criterion = nn.NLLLoss()
+
+    for epoch in range(epochs):
+       for batch_idx, (data, target) in enumerate(dataLoader):
+       data, target = Variable(data), Variable(target)
+
+
+if __name__ == "main":
+
 
 

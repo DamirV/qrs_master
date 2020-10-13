@@ -9,12 +9,9 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import numpy as np
 import drawer
+import qrs_master
 
 
-dataset = QrsDataset()
-print("success")
+net = tryToTrain()
 
-for i in range(5):
-    y = dataset.__getitem__(0)
-    drawer.draw(y)
 

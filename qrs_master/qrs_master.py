@@ -27,30 +27,50 @@ trans = transforms.Compose(
 
 class QrsMaster(nn.Module):
     def __init__(self):
-        self.fc1 = nn.Linear(61, 10)
-        self.fc2 = nn.Linear(10, 1)
+        super(QrsMaster, self).__init__()
+        self.fc1 = nn.Linear(61, 32)
+        self.fc2 = nn.Linear(32, 8)
+        self.fc3 = nn.Linear(8, 1)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
         x = self.fc3(x)
         return x
 
 
 def tryToTrain():
     epochs = 10
-    data = data_loader.QrsDataset()
-    dataLoader = DataLoader(data, batch_size=15, shuffle=True)
-    qrs_master = QrsMaster()
-    optimizer = torch.optim.SGD(qrs_master.parameters(), lr=learning_rate, momentum=0.9)
-    criterion = nn.NLLLoss()
+    batch_size = 15
+    learning_rate = 0.01
+    dataLoader = data_loader.QrsDataset()
+    net = QrsMaster()
+    optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
+    criterion = nn.MSELoss()
 
     for epoch in range(epochs):
-       for batch_idx, (data, target) in enumerate(dataLoader):
-       data, target = Variable(data), Variable(target)
+        for batch_idx in range(batch_size):
+            data, target = dataLoader.__getitem__(batch_idx)
+
+            data = np.array(data)
+            target = np.array(target)
+
+            data = torch.from_numpy(data)
+            target = torch.from_numpy(target)
+
+            optimizer.zero_grad()
+            output = net(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+
+            print("epoch = " + epoch + "/" + epochs)
+            print("output = " + output + " ,target = " + target + " ,loss = " + loss)
+
+    return net
 
 
-if __name__ == "main":
-
-
-
+if __name__ == "__main__":
+    a = tryToTrain()

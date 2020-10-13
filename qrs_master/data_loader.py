@@ -6,9 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 class QrsDataset(Dataset):
     def __init__(self):
         self.data = self.load_data()
-        self.positiveCount = 0
-        self.negativeCount = 0
-        self.isQRS = False
+
 
     def load_data(self):
         PATH = "D:\\Projects\\ecg_gan_experiments-master\\Dataset\\"
@@ -25,19 +23,17 @@ class QrsDataset(Dataset):
         key, value = random.choice(list(self.data.items()))
         signal = value['Leads']['i']['Signal']
         deliniation = value['Leads']['i']['Delineation']['qrs']
-        randomFlag = 0 #random.randint(0, 1)
+        randomFlag = random.randint(0, 1)
 
         if(randomFlag == 1):
-            self.positiveCount += 1
-            self.isQRS = True
+            isqrs = 1
             center = random.choice(deliniation)[1]
         else:
-            self.negativeCount += 1
-            self.isQRS = False
+            isqrs = 0
             center = self.randCenter(deliniation, signal)
 
         signal = signal[center - 30:center + 31]
-        return signal
+        return signal, isqrs
 
 
     def __len__(self):
@@ -56,5 +52,3 @@ class QrsDataset(Dataset):
         return center
 
 
-    def IsQRS(self):
-        return self.isQRS

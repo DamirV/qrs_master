@@ -15,15 +15,6 @@ import matplotlib
 import torch
 import data_loader
 
-num_epochs = 100
-num_classes = 1
-batch_size = 10
-learning_rate = 0.001
-DATA_PATH = "D:\\Projects\\ecg_gan_experiments-master\\Dataset\\"
-MODEL_STORE_PATH = "D:\\Projects\\ecg_gan_experiments-master\\Models\\"
-trans = transforms.Compose(
-    [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-
 
 class QrsMaster(nn.Module):
     def __init__(self):
@@ -42,23 +33,18 @@ class QrsMaster(nn.Module):
 
 
 def tryToTrain():
-    epochs = 10
-    batch_size = 15
+    epochs = 100
     learning_rate = 0.01
-    dataLoader = data_loader.QrsDataset()
+    dataloader = data_loader.QrsDataset()
+    dataloader = DataLoader(dataloader, batch_size=1, shuffle=True)
     net = QrsMaster()
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
-    criterion = nn.MSELoss()
+    criterion = torch.nn.MSELoss()
 
     for epoch in range(epochs):
-        for batch_idx in range(batch_size):
-            data, target = dataLoader.__getitem__(batch_idx)
+        for i, (data, target) in enumerate(dataloader):
 
-            data = np.array(data)
-            target = np.array(target)
-
-            data = torch.from_numpy(data)
-            target = torch.from_numpy(target)
+            target = target.view(1, -1)
 
             optimizer.zero_grad()
             output = net(data)
@@ -66,8 +52,8 @@ def tryToTrain():
             loss.backward()
             optimizer.step()
 
-            print("epoch = " + epoch + "/" + epochs)
-            print("output = " + output + " ,target = " + target + " ,loss = " + loss)
+            print("[Epoch %d/%d] [Batch %d/%d] [loss: %f]"
+                %(epoch + 1, epochs, i, len(dataloader), loss.item()))
 
     return net
 

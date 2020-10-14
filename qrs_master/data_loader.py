@@ -1,7 +1,8 @@
 import json
 import random
 from torch.utils.data import Dataset, DataLoader
-
+import torch
+import numpy as np
 
 class QrsDataset(Dataset):
     def __init__(self):
@@ -33,11 +34,18 @@ class QrsDataset(Dataset):
             center = self.randCenter(deliniation, signal)
 
         signal = signal[center - 30:center + 31]
+
+        signal = np.asarray(signal, dtype=np.float32)
+        isqrs = np.asarray(isqrs, dtype=np.float32)
+
+        signal = torch.from_numpy(signal)
+        isqrs = torch.from_numpy(isqrs)
+
         return signal, isqrs
 
 
     def __len__(self):
-        return 200 # заглушка
+        return 2000 # заглушка
 
 
     def randCenter(self, deliniation, signal):

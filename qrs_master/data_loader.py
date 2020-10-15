@@ -5,8 +5,9 @@ import torch
 import numpy as np
 
 class QrsDataset(Dataset):
-    def __init__(self):
+    def __init__(self, istrain):
         self.data = self.load_data()
+        self.istrain = istrain
 
 
     def load_data(self):
@@ -22,12 +23,16 @@ class QrsDataset(Dataset):
 
     def __getitem__(self, id):
         key, value = random.choice(list(self.data.items()))
-        signal = value['Leads']['i']['Signal']
+        if self.istrain:
+            signal = value['Leads']['i']['Signal']
+        else:
+            signal = value['Leads']['ii']['Signal']
+
         deliniation = value['Leads']['i']['Delineation']['qrs']
         randomFlag = random.randint(0, 1)
 
         if(randomFlag == 1):
-            isqrs = 1000
+            isqrs = 1
             center = random.choice(deliniation)[1]
         else:
             isqrs = 0
@@ -45,7 +50,7 @@ class QrsDataset(Dataset):
 
 
     def __len__(self):
-        return 600 # заглушка
+        return 2000 # заглушка
 
 
     def randCenter(self, deliniation, signal):
@@ -58,5 +63,14 @@ class QrsDataset(Dataset):
                 break
 
         return center
+
+
+    def getSignal(self):
+        key, value = random.choice(list(self.data.items()))
+        signal = value['Leads']['ii']['Signal']
+        signal = np.asarray(signal, dtype=np.float32)
+        return signal
+
+
 
 

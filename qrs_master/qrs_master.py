@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import torch
 import data_loader
+import drawer
 
 
 class QrsMaster(nn.Module):
@@ -29,24 +30,26 @@ class QrsMaster(nn.Module):
         x = self.fc2(x)
         x = F.relu(x)
         x = self.fc3(x)
+        x = F.sigmoid(x)
         return x
 
 
 def tryToTrain():
-    epochs = 3
-    learning_rate = 0.01
-    dataloader = data_loader.QrsDataset()
-    dataloader = DataLoader(dataloader, batch_size=4)
+    epochs = 10
+    learning_rate = 0.001
+    dataloader = data_loader.QrsDataset(istrain=True)
+    dataloader = DataLoader(dataloader)
     net = QrsMaster()
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
     criterion = torch.nn.MSELoss()
 
     for epoch in range(epochs):
         for i, (data, target) in enumerate(dataloader):
-
             target = target.view(1, -1)
+            target = torch.transpose(target, 0, 1)
             optimizer.zero_grad()
             output = net(data)
+
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
@@ -56,5 +59,25 @@ def tryToTrain():
     return net
 
 
+def cutSignal(signal, start):
+    signal = signal[start-30:start+31]
+    return signal
+
+
 if __name__ == "__main__":
-    a = tryToTrain()
+    dataloader = data_loader.QrsDataset(istrain=True)
+    testSignal = dataloader.getSignal()
+    dataloader = DataLoader(dataloader, batch_size=4)
+
+    net = tryToTrain()
+    result = []
+
+    for i in range(30, 5000 - 31):
+        signal = cutSignal(testSignal, i)
+        signal = torch.from_numpy(signal)
+        tempResult = net(signal)
+        tempResult = tempResult.detach().numpy()
+        result.append(tempResult[0])
+
+    drawer.draw(testSignal)
+    drawer.draw(result)

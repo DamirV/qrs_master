@@ -27,7 +27,7 @@ class QrsDataset(Dataset):
         randomFlag = random.randint(0, 1)
 
         if(randomFlag == 1):
-            isqrs = 1
+            isqrs = 1000
             center = random.choice(deliniation)[1]
         else:
             isqrs = 0
@@ -45,7 +45,7 @@ class QrsDataset(Dataset):
 
 
     def __len__(self):
-        return 2000 # заглушка
+        return 600 # заглушка
 
 
     def randCenter(self, deliniation, signal):

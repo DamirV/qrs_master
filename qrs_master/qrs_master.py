@@ -33,10 +33,10 @@ class QrsMaster(nn.Module):
 
 
 def tryToTrain():
-    epochs = 100
+    epochs = 3
     learning_rate = 0.01
     dataloader = data_loader.QrsDataset()
-    dataloader = DataLoader(dataloader, batch_size=1, shuffle=True)
+    dataloader = DataLoader(dataloader, batch_size=4)
     net = QrsMaster()
     optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
     criterion = torch.nn.MSELoss()
@@ -45,15 +45,13 @@ def tryToTrain():
         for i, (data, target) in enumerate(dataloader):
 
             target = target.view(1, -1)
-
             optimizer.zero_grad()
             output = net(data)
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
-
             print("[Epoch %d/%d] [Batch %d/%d] [loss: %f]"
-                %(epoch + 1, epochs, i, len(dataloader), loss.item()))
+                %(epoch + 1, epochs, i + 1, len(dataloader), loss.item()))
 
     return net
 
